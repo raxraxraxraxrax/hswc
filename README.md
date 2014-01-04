@@ -28,3 +28,5 @@ this will all be hosted on a Debian box through apache2
 it looks like there's an OpenID apache module I've worked with before so I'm going to start with that
 my limited experience is with python and mako for html templating so unless someone prefers something else we might
 as well use that?
+
+woo
