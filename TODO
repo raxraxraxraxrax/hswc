@@ -1,0 +1,35 @@
+TODO: everything
+
+task 1: signup page
+
+ * get OpenID proof of concept up
+ * HTML mockup of signup page
+ * HTML mockup of nope you have no openID page
+ * can we have it reject openID that isn't DW?
+ * HTML mockup of final spreadsheet
+ * database schema
+ * make sure everyone agrees on spec for how signup actually works
+ * make new todo items once we are closer to the goal
+
+task 2: voting page
+
+ * also gated by OpenID
+ * HTML mockup of voting page
+ * database schema
+ * HTML mockup of results pages
+ * again we need a spec from the full mod team
+ * new todo items once we are closer to the goal
+
+task 3: dreamwidth crawling
+
+ * hoo boy
+ * hairy
+ * made of hair
+ * it's like Jade/Condesce up in here
+ * this is lower priority so think about it more later
+
+other things we might want to do:
+
+ * something tht assigns mods to teams for liaisoning:
+   this should be easy but I haven't thought about it much yet
+   and how easy it is will depend on the db schema
