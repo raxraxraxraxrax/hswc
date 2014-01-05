@@ -33,3 +33,4 @@ other things we might want to do:
  * something tht assigns mods to teams for liaisoning:
    this should be easy but I haven't thought about it much yet
    and how easy it is will depend on the db schema
+ * some sort of drop form mirroring the signup form
