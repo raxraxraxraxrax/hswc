@@ -1,0 +1,61 @@
+We made a wiki for the rules; it's hosted on autumnfox. If you want to make
+your own wiki you can do that too! Here's what I did:
+
+1. install python-moinmoin package via debian apt
+2. Create and populate /var/www/mywiki
+    # mkdir /var/www/mywiki
+    # mkdir /var/lib/mywiki
+    # cp -r /usr/share/moin/data /usr/share/moin/underlay /var/lib/mywiki
+3. Pass on the wiki to Apache:
+    # chown -R www-data: /var/www/mywiki /var/lib/mywiki
+4. edit the default apache config to include the wiki:
+
+        # trying to make moinmoin work for HSWC
+        Alias /moin_static194/applets/FCKeditor/ "/usr/share/fckeditor/"
+        Alias /moin_static194/ "/usr/share/moin/htdocs/"
+        ScriptAlias /hswcrules "/usr/share/moin/server/moin.cgi"
+
+   that goes in the virtual host in /etc/apache2/mods-available/whatever
+4b.if instead we had a separate hostname we could follow the instructions
+   to make that work in /usr/share/doc/python-moinmoin/README.Debian.gz
+   but I'm a rebellious youth who flaunts the rules so I didn't do that
+   also I don't know if I want to buy a domain name for this yet
+5. Configure MoinMoin:
+   Edit /etc/moin/mywiki.py to include these lines:
+
+        sitename = u'MyWiki' # [Unicode]
+        data_dir = '/var/lib/mywiki/data'
+        data_underlay_dir = '/var/lib/mywiki/underlay'
+        superuser = [u"YourName", ]
+5b.the docs say to do this and I did:
+    Edit /etc/moin/wikilist to include this line:
+
+        www-data wiki.example.org/
+   but I am pretty sure that's pointless here
+6. /etc/init.d/apache2 restart
+7. Visit your new wiki at http://your.site/MyWiki/LanguageSetup
+    then create you account (name according to the superuser you specified
+    above).
+8. Install the language pack you want to use (typically, you want to install
+    the "all_pages" pack in English, plus the languages use in your wiki).
+   I did the all_pages English
+9. Turn off creation of new accounts, it's the best way to prevent spam
+   and users being wrong on the Internet:
+    # stop new accounts being created
+    import MoinMoin.config.multiconfig # if not already included in your config file
+    actions_excluded = MoinMoin.config.multiconfig.DefaultConfig.actions_excluded + ['newaccount']
+   the docs were unclear about where this _belongs_ but you can put it in
+   /etc/moin/mywiki.py at the end within Config  and it's fine
+
+almost everywhere you want to sub "hswcrules" or something for "mywiki"
+but the file /etc/moin/mywiki.py should actually be called mywiki.py unless
+you have multiple wikis on the server in which case you should know what
+you are doing more than me or at least spend more time with the real 
+moinmoin documentation
+
+why is the name mywiki sometimes structural and sometimes a placeholder?
+because tech writing is dead guy fieri killed it
+
+<3,
+
+-r.
