@@ -30,6 +30,13 @@ def get_list_of_teams():
         teamlist.append(team[0]) # man isn't it cool that order matters
     return teamlist
 
+def make_friendleader(player, teamname):
+    """Make player friendleader of teamname."""
+    array = (player, teamname)
+    cursor.execute('UPDATE teams set friendleader=? where name=?', array) 
+    dbconn.commit()
+    return
+
     
 def add_player_to_team(player, teamname, flwilling):
     """Adds a player to a team. If the team is full, errors out.
@@ -72,8 +79,7 @@ def add_player_to_team(player, teamname, flwilling):
                 cursor.execute('UPDATE teams set ?=? where name=?', array)
                 if not friendleader:
                     if flwilling:
-                        array = (player, teamname)
-                        cursor.execute('UPDATE teams set friendleader=? where name=?', array)
+                        make_friendleader(player, teamname) 
                 dbconn.commit()
                 print "success"
                 return
@@ -82,6 +88,9 @@ def add_player_to_team(player, teamname, flwilling):
                 return
         else:
             print "I guess pass since you are already on the team?"
+            if not friendleader:
+                if flwilling:
+                    make_friendleader(player, teamname)
     else:
         print "handle error because team doesn't exist"
     return
