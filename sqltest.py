@@ -73,11 +73,10 @@ def add_player_to_team(player, teamname, flwilling):
             if teamindex:
                 # because if it's zero, the team is full         
                 strteamindex = 'member' + str(teamindex - 2)
-                print teamname
-                array = (strteamindex, player, teamname)
-                print array
-                # statement below errors out --- why?
-                cursor.execute('UPDATE teams set ?=? where name=?', array)
+
+                # python the fact that I have to do the below makes me sad
+                string = 'UPDATE teams set %s=? where name=?' % strteamindex
+                cursor.execute(string, (player, teamname))
                 if not friendleader:
                     if flwilling:
                         make_friendleader(player, teamname) 
