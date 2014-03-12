@@ -65,13 +65,14 @@ def add_player_to_team(player, teamname, flwilling):
             else:
                 # this is your slot now
                 teamindex = x
+                break
 
         # maybe "is team full" should be its own function?
 
         if not alreadyonteam:
             if teamindex:
                 # because if it's zero, the team is full         
-                strteamindex = 'player' + str(teamindex)
+                strteamindex = 'member' + str(teamindex - 2)
                 print teamname
                 array = (strteamindex, player, teamname)
                 print array
