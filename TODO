@@ -1,17 +1,19 @@
 TODO: everything
 
 task 1: signup page
+(this is the only thing I think we may have done for April 8)
 
- * get OpenID proof of concept up
+ * get OpenID proof of concept up : DONE
  * HTML mockup of signup page
  * HTML mockup of nope you have no openID page
- * can we have it reject openID that isn't DW?
+ * can we have it reject openID that isn't DW? : YES
  * HTML mockup of final spreadsheet
- * database schema
+ * database schema : WE HAVE ONE BUT IT'S KINDA BAD BUT WHATEVS
  * make sure everyone agrees on spec for how signup actually works
  * make new todo items once we are closer to the goal
 
 task 2: voting page
+(we don't actually need this until late May or June)
 
  * also gated by OpenID
  * HTML mockup of voting page
@@ -21,6 +23,7 @@ task 2: voting page
  * new todo items once we are closer to the goal
 
 task 3: dreamwidth crawling
+(this we need earlier but it's low priority so I'm not touching it)
 
  * hoo boy
  * hairy
@@ -30,7 +33,7 @@ task 3: dreamwidth crawling
 
 other things we might want to do:
 
- * something tht assigns mods to teams for liaisoning:
+ * something that assigns mods to teams for liaisoning:
    this should be easy but I haven't thought about it much yet
    and how easy it is will depend on the db schema
  * some sort of drop form mirroring the signup form

@@ -14,6 +14,8 @@ the first one is letting people sign up and assign themselves to teams
 which mostly needs openid integration, ability to write to a database, and ability to make an html page with a
 huge spreadsheet/table based on that database, ideally with a bunch of links/buttons on it
 this doesn't seem that hard although it may be somewhat grindy
+(to make it autoupdate would require some javascript stuff that we might do but I am so not dealing with for a minimum feature set)
+
 the second task is making a page that lets people vote for their favorite fanwork; based on their openID they
 get a different list, and they can only vote once, and all the votes have to be tabulated and then the results also get
 spit out as a big html table woooo
@@ -25,8 +27,13 @@ there may be a useful API for this or it may just be taking apart HTML, which is
 
 this will all be hosted on a Debian box through apache2
 
-it looks like there's an OpenID apache module I've worked with before so I'm going to start with that
-my limited experience is with python and mako for html templating so unless someone prefers something else we might
-as well use that?
+it looks like there's an OpenID apache module I've worked with before so
+I'm going to start with that: except it's not compatible with dreamwidth
+so now I'm using python-openid and using apache to proxy to a python
+server, which is probably _sensible_ but is not how I'm used to doing 
+things so it may be a big ugly
+
+my limited experience is with python and mako for html templating so
+unless someone prefers something else we might as well use that?
 
 woo
