@@ -3,6 +3,22 @@
 import sqlite3, sys
 dbconn = sqlite3.connect('hswc.db')
 
+## Assumptions about the database are currently:
+
+# sqlite> .schema
+# CREATE TABLE players(dwname TEXT, email TEXT, tumblr TEXT, team TEXT, friendleader TEXT, flwilling TEXT, notes TEXT, extrafield TEXT);
+# CREATE TABLE teams(name TEXT, active TEXT, friendleader TEXT, member1 TEXT, member2 TEXT, member3 TEXT, member4 TEXT, member5 TEXT, member6 TEXT, member7 TEXT, member8 TEXT, member9 TEXT, member10 TEXT, member11 TEXT, member12 TEXT, member13 TEXT, totalscore INT, round1 INT, round2 INT, collab INT, bonus0 INT, bonus1 INT, bonus2 INT, bonus3 INT, bonus4 INT, bonus5 INT, bonus6 INT, bonus7 INT, extrafield TEXT);
+
+## this is minorly belunkus but it's a starting point at least
+## in particular the players table doesn't need 'flwilling'
+## and having it be dwname and name in different tables is _kind_ of
+## stupid although also a reminder of which table you're working with
+
+## extrafield is there in case I forgot something and need to insert it 
+## in the middle of the event, which is probably the sort of thing you 
+## only do when you are writing hackity nonsense for shipping competitions, 
+## but that's what I'm doing so here we are
+
 cursor = dbconn.cursor()
 
 def team_exists(teamname):
@@ -16,6 +32,16 @@ def team_exists(teamname):
     else:
         print 'does not exist'
         return 0 
+
+def player_exists(player):
+    """See if a player exists in the database or not. If yes, return 1,
+       if not return 0."""
+    array = (player,)
+    cursor.execute('SELECT * from players where dwname=?', array)
+    if cursor.fetchone():
+        return 1
+    else:
+        return 0
     
 def add_team(teamname):
     """Add a team to the database without information in it."""
@@ -34,15 +60,27 @@ def make_friendleader(player, teamname):
     """Make player friendleader of teamname."""
     array = (player, teamname)
     cursor.execute('UPDATE teams set friendleader=? where name=?', array) 
+    cursor.execute('UPDATE players set friendleader=? where dwname=?', ('yes', player))
     dbconn.commit()
     return
 
+def add_player_to_players(player,email,tumblr):
+    """Put the player in the player database at all.
+       Team preference is not handled here."""
+    array=(player, email, tumblr)
+    cursor.execute('INSERT into players (dwname, email, tumblr) values (?,?,?)', array)
+    dbconn.commit()
+    return
     
-def add_player_to_team(player, teamname, flwilling):
+def add_player_to_team(player, teamname, flwilling, email, tumblr):
     """Adds a player to a team. If the team is full, errors out.
        If the player is already on the team, continue without changes.
        If the player is willing and there is no friendleader, FLify them.
        If the team has at least 5 members, make it active."""
+
+    if not player_exists(player):
+        add_player_to_players(player, email, tumblr)
+
     if team_exists(teamname):  
         array = (teamname,)
         cursor.execute('SELECT * from teams where name=?', array)
@@ -111,4 +149,7 @@ if __name__ == "__main__":
     teamlist = get_list_of_teams()
     print teamlist 
    
-    add_player_to_team('rax','rax<3<computers',0)
+    add_player_to_team('rax','rax<3<computers',0,'rax@akrasiac.org','')
+    for player in playernames:
+        add_player_to_team(player, 'rax<3<computers',0,'test@example.com','')
+ 
