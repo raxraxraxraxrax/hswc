@@ -364,10 +364,10 @@ query parameters added."""
         self.send_response(status)
         self.pageHeader(title)
         if message:
+	    print message
             self.wfile.write("<div class='%s'>" % (css_class,))
             self.wfile.write(message)
             self.wfile.write("</div>")
-
         self.pageFooter(form_contents)
 
     def pageHeader(self, title):
@@ -379,95 +379,183 @@ Content-type: text/html; charset=UTF-8
 
 <html>
 <head><title>HSWC SIGNUPS</title></head>
-<style type="text/css">
-* {
-font-family: verdana,sans-serif;
+<style type="text/css" media="all">
+<!-- to protect older browsers apparently? -->
+html, body {	
+	font-family: Verdana,Arial,"Liberation Sans",sans-serif;
+	color: #000;
+	font-size: 11pt;
+	background-color: #e5e4e5;
 }
-body {
-width: 50em;
-margin: 1em;
+
+a:link {
+	color: #3c3c89;
+	font-weight:bold;
+	text-decoration: none;
 }
-div {
-padding: .5em;
+
+a:hover {
+	color: #4e5273;
+	font-weight:bold;
+	text-decoration: underline;
 }
-tr.odd td {
-background-color: #dddddd;
+
+h1 {
+	font-size: 18pt;
+	text-transform: uppercase;
+	color: #3c3c89;
+	text-align: center;
 }
-table.sreg {
-border: 1px solid black;
-border-collapse: collapse;
+
+.navigation {
+	margin-left: auto;
+	margin-right: auto;	
+	text-align: center;
+	border-top: 1px #4e5273 solid;
+	width:50%;
+	padding: 22px 0px 10px 0px;
 }
-table.sreg th {
-border-bottom: 1px solid black;
-}
-table.sreg td, table.sreg th {
-padding: 0.5em;
-text-align: left;
-}
-table {
-margin: 0;
-padding: 0;
-}
+
+#verify-form { 
+	border: 2px #4e5273 solid;
+	margin: 0px 10px 20px 10px;
+	padding: 7px;
+	background-color: #fff;
+	font-weight: bold;
+	text-align: center;
+	display:none;
+	}
+
 .alert {
-border: 1px solid #e7dc2b;
-background: #fff888;
+	border: 1px solid #e7dc2b;
+	background-color: #fff888;
+	font-weight: bold;
 }
+
 .error {
-border: 1px solid #ff0000;
-background: #ffaaaa;
+	border: 1px solid #ff0000;
+	background-color: #ffaaaa;
+	font-weight: bold;
 }
-#verify-form {
-border: 1px solid #777777;
-background: #dddddd;
-margin-top: 1em;
-padding-bottom: 0em;
+
+form {
+	width: 70%;
+	background-color: #fff;
+	padding: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top:1%;
+	border-radius:10px;
+	box-shadow:5px 5px #babad5;
+}
+
+.edit { 
+	border: 2px #4e5273 solid;
+	margin: 7px;
+	padding: 7px;
+	background-color: #f1f1f1;
+	}
+
+input, textarea {
+	border: 1px solid black;
+	background-color: #fff;
+	margin: 3px 0px 0px 0px;
+}
+
+.field {
+	font-weight:bold
+	}
+
+.descrip {
+	font-size:10pt;
+	color:#202020;
+}
+
+
+table {
+	width: 80%;
+	background-color: #fff;
+	padding: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top:1%;
+	border-radius:10px;
+	box-shadow:5px 5px #babad5;
+}
+.tableheader {
+	background-color: #e3e3e3;
+}
+
+tr:hover {
+	background-color: #babad5;
 }
 </style>
+
 <body>
-<h1>HSWC SIGNUPs</h1>
-<form method="GET" accept-charset="UTF-8" action=%s>
-<p>
-<span class="field">Dreamwidth Username:</span><br />
-<span class="descrip">Make sure it's <a href="http://hs-worldcup.dreamwidth.org/2803.html#join">verified</a>!</span><br />
-<input type="text" name="username" />
-</p>
-<p>
-<span class="field">E-mail Address:</span><br />
-<input type="text" name="email" />
-</p>
-<p>
-<span class="field">Joining HSWC Team:</span> <input type="text" name="team" />
-</p>
-<p>
-<span class="field">Would you like to volunteer to be the team's <a href="http://autumnfox.akrasiac.org/hswcrules/Teams#Friendleaders">Friendleader?</a>:</span><br />
-<input type="radio" name="FL" value="yes" />Yes<br />
-<input type="radio" name="FL" value="no" />No
-</p>
-<p>
-<span class="field">Any noteworthy content tags or warnings that you would like to add and are not already listed in the content tags list?:</span> <br />
-<textarea name="content-tags" rows="5" cols="70" />&nbsp;</textarea>
-</p>
-<p>
-<span class="field">Rules check phrase from the <a href="http://autumnfox.akrasiac.org/hswcrules/Participant%%20Agreement">Participant Agreement</a>:</span> <input type="text" name="rules-check" />
-</p>
-<input type="submit" value="Sign up!" /><br/>
-</form>
-''' % (quoteattr(self.buildURL('verify')),))
+
+	<h1>
+	HSWC 2014 Sign Up Form
+	</h1>
+
+<p class="navigation">Team Roster | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+''')
 
     def pageFooter(self, form_contents):
         """Render the page footer"""
         if not form_contents:
             form_contents = ''
-
         self.wfile.write('''\
-<div id="verify-form">
-Footer stuff goes here.<br/>
-%s<br/>
-%s<br/>
-</div>
-</body>
-</html>
-''' % (quoteattr(self.buildURL('verify')), quoteattr(form_contents)))
+<br/>
+<form method="GET" accept-charset="UTF-8" action=%s>
+<p class="edit">
+	<strong>To edit your sign up for any reason</strong> (typos, wrong 
+e-mail, switching teams, new content tags, etc.), just sign up 
+again. You won't lose your current team spot (unless you're 
+switching teams).
+</p>
+
+<p>
+	<span class="field">Dreamwidth Username:</span><br />
+	<span class="descrip">You need a <a href="https://www.dreamwidth.org/create">DW account</a>. Make sure it's <a href="http://hs-worldcup.dreamwidth.org/2803.html#join">verified</a>!</span><br />
+	<input name="username" type="text" />
+</p>
+
+<p>
+	<span class="field">E-mail Address:</span><br />
+	<input name="email" type="text" />
+</p>
+
+<p>
+	<span class="field">Joining HSWC Team:</span><br />
+	<span class="descrip">Format your team name <a href="http://hswc-announce.tumblr.com/post/49934185410/how-to-write-ship-names">like this</a>!</span><br />
+	<input name="team" type="text" />
+</p>
+
+<p>
+	<span class="field">Would you like to volunteer to be the team's <a href="http://autumnfox.akrasiac.org/hswcrules/Teams#Friendleaders">Friendleader?</a>:</span><br />
+	<input name="FL" value="yes" type="radio" />Yes &nbsp; <input name="FL" value="no" type="radio" />No
+</p>
+
+<p>
+	<span class="field">Any noteworthy content tags that you would like to add and are not already listed on the <a href="http://autumnfox.akrasiac.org/hswcrules/Tags%%20List">content tags list?</a>:</span> <br />
+	<span class="descrip">The major content tags are used to warn for 
+content that may be potentially upsetting and is not a place for 
+sarcastic comments or jokes. Misusing the tag request form may result in
+ your removal from the HSWC.</span><br />
+	<textarea name="content-tags" rows="5" cols="70">&nbsp;</textarea>
+</p>
+
+<p>
+	<span class="field"><a href="http://autumnfox.akrasiac.org/hswcrules/Participant%%20Agreement">Participant Agreement</a>'s rules check phrase:</span><br />
+	<input name="rules-check" type="text" />
+</p>
+
+<input type="submit" value="Sign up!">
+
+</form>
+ 
+</body></html>
+''' % (quoteattr(self.buildURL('verify')),))
 
 def main(host, port, data_path, weak_ssl=False):
     # Instantiate OpenID consumer store and OpenID consumer. If you
