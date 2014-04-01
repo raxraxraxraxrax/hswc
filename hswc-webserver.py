@@ -158,6 +158,170 @@ written to the requesting browser.
 
     def doTeams(self):
 	"""Show the page with all of the teams on it. Right now, empty."""
+	teamcount = str(hswc.get_teamcount(cursor))
+	playercount = str(hswc.get_teamcount(cursor))
+
+	self.send_response(200)
+	self.wfile.write('''\
+Content-type: text/html; charset=UTF-8
+
+<head>
+	<title>
+	HSWC 2014 TEAM ROSTER
+	</title>
+
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="refresh" content="50000" />
+	<meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+
+	<style type="text/css" media="all">
+html, body {	
+	font-family: Verdana,Arial,"Liberation Sans",sans-serif;
+	color: #000;
+	font-size: 11pt;
+	background-color: #e5e4e5;
+}
+
+a:link, a:visited {
+	color: #3c3c89;
+	font-weight:bold;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #4e5273;
+	font-weight:bold;
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 18pt;
+	text-transform: uppercase;
+	color: #3c3c89;
+	text-align: center;
+}
+
+.navigation {
+	margin-left: auto;
+	margin-right: auto;	
+	text-align: center;
+	border-top: 1px #4e5273 solid;
+	width:50%;
+	padding: 22px 0px 10px 0px;
+}
+
+.tally {
+	margin-left: auto;
+	margin-right: auto;	
+	text-align: center;
+	background-color: #f9f9f9;
+	padding: 3px;
+	width: 540px;
+	border-radius:10px;
+}
+
+table {
+	width: 80%;
+	background-color: #fff;
+	padding: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top:1%;
+	border-radius:10px;
+	box-shadow:5px 5px #babad5;
+}
+
+.roster_teamname {
+	background-color:#CCCCFF;
+	font-size:15pt;
+	text-transform:lowercase;
+	width: 94%;
+	text-align: right;
+	padding: 7px;
+}
+
+.roster_teamslots {
+	background-color: #FA8072;
+	width: 6%;
+	text-align: center;
+}
+
+.roster_teamslots_full {
+	background-color: #EED5D2;
+	width: 6%;
+	text-align: center;
+}
+
+.roster_teamslots_small {
+	background-color: #CC1100;
+	color: #fff;
+	width: 6%;
+	text-align: center;
+}
+
+.roster_fl {
+	padding: 7px 0px 5px 15px;
+	border-bottom: 1px dotted #babad5;
+	text-transform:lowercase;
+}
+
+.roster_members {
+	padding: 3px 0px 15px 15px;
+	text-transform:lowercase;
+}
+	</style>
+</head>''')
+
+	self.wfile.write('''\
+<body>
+
+	<h1>
+	HSWC 2014 Team Roster
+	</h1>
+
+<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+
+<p class="tally">
+	There are currently <strong>%s teams</strong> and <strong>%s participants</strong> in the HSWC.<br />
+	This page will automatically update every X minutes.
+</p>
+
+<table>''' % (teamcount,playercount))
+        
+        # DO STUFF TO MAKE A TABLE HERE
+
+	allteams = hswc.get_list_of_teams(cursor)
+	for team in allteams:
+	    displayline = hswc.get_team_display_line(team, cursor)
+	    self.wfile.write('''\
+<tr>
+	<td class="%s">
+	%s/13
+	</td>
+
+	<td class="roster_teamname">
+	%s
+	</td>
+</tr>
+<tr>
+	<td colspan="2" class="roster_fl">
+	<span style="font-weight:bold;text-transform:none">Friendleader:</span> %s 
+	</td>
+</tr>
+<tr>
+	<td colspan="2" class="roster_members">
+	<span style="font-weight:bold;text-transform:none">Members:</span> %s
+	</td>
+</tr>''' % displayline)
+
+        self.wfile.write('''\
+</table>
+
+<p style="text-align: center;font-size: 12pt;"><span style="color: red">&hearts;</span> <span style="color: gray">&clubs;</span> <span style="color: pink">&diams;</span> &spades;</p>
+
+</body>
+</html>''')
+
 
 
     def doVerify(self):
@@ -177,7 +341,7 @@ written to the requesting browser.
 	contentnotes = self.query.get('content-tags')
 
 	# You have to get the rules check right.
-	if self.query.get('rules-check') != 'I certify that I have read and will abide by the Rules and Regulations of the 2014 HSWC.':
+	if (self.query.get('rules-check')).strip() != 'I certify that I have read and will abide by the Rules and Regulations of the 2014 HSWC.':
 	   self.render('Please enter the correct rules check text.', css_class='error',
 		       form_contents=(openid_url,email,team,contentnotes))
 	   return
@@ -377,10 +541,16 @@ query parameters added."""
         self.wfile.write('''\
 Content-type: text/html; charset=UTF-8
 
-<html>
-<head><title>HSWC SIGNUPS</title></head>
-<style type="text/css" media="all">
-<!-- to protect older browsers apparently? -->
+<head>
+	<title>
+	HSWC 2014 SIGNUPS
+	</title>
+
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="refresh" content="50000" />
+	<meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+
+	<style type="text/css" media="all">
 html, body {	
 	font-family: Verdana,Arial,"Liberation Sans",sans-serif;
 	color: #000;
@@ -388,7 +558,7 @@ html, body {
 	background-color: #e5e4e5;
 }
 
-a:link {
+a:link,a:visited {
 	color: #3c3c89;
 	font-weight:bold;
 	text-decoration: none;
@@ -416,26 +586,28 @@ h1 {
 	padding: 22px 0px 10px 0px;
 }
 
-#verify-form { 
-	border: 2px #4e5273 solid;
-	margin: 0px 10px 20px 10px;
-	padding: 7px;
-	background-color: #fff;
-	font-weight: bold;
-	text-align: center;
-	display:none;
-	}
-
 .alert {
-	border: 1px solid #e7dc2b;
+	border: 2px solid #e7dc2b;
+	margin: 0px 10px 20px 0px;
+	padding: 7px;
 	background-color: #fff888;
 	font-weight: bold;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	width: 70%;
 }
 
 .error {
-	border: 1px solid #ff0000;
+	border: 2px solid #ff0000;
+	margin: 0px 10px 20px 0px;
+	padding: 7px;
 	background-color: #ffaaaa;
 	font-weight: bold;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	width: 70%;
 }
 
 form {
@@ -470,26 +642,8 @@ input, textarea {
 	font-size:10pt;
 	color:#202020;
 }
-
-
-table {
-	width: 80%;
-	background-color: #fff;
-	padding: 20px;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top:1%;
-	border-radius:10px;
-	box-shadow:5px 5px #babad5;
-}
-.tableheader {
-	background-color: #e3e3e3;
-}
-
-tr:hover {
-	background-color: #babad5;
-}
-</style>
+	</style>
+</head>
 
 <body>
 
@@ -497,7 +651,7 @@ tr:hover {
 	HSWC 2014 Sign Up Form
 	</h1>
 
-<p class="navigation">Team Roster | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Teams</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
 ''')
 
     def pageFooter(self, form_contents):
@@ -505,7 +659,6 @@ tr:hover {
         if not form_contents:
             form_contents = ''
         self.wfile.write('''\
-<br/>
 <form method="GET" accept-charset="UTF-8" action=%s>
 <p class="edit">
 	<strong>To edit your sign up for any reason</strong> (typos, wrong 
@@ -553,6 +706,9 @@ sarcastic comments or jokes. Misusing the tag request form may result in
 <input type="submit" value="Sign up!">
 
 </form>
+
+<p style="text-align: center;font-size: 12pt;"><span style="color: red">&hearts;</span> 
+<span style="color: gray">&clubs;</span> <span style="color: pink">&diams;</span> &spades;</p>
  
 </body></html>
 ''' % (quoteattr(self.buildURL('verify')),))

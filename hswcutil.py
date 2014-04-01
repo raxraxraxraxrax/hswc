@@ -54,7 +54,20 @@ def get_list_of_teams(cursor):
     teamlist = []
     for team in cursor.execute('SELECT * from teams'):
         teamlist.append(team[0]) # man isn't it cool that order matters
+    teamlist.sort()
     return teamlist
+
+def get_teamcount(cursor):
+    """Get a count of teams."""
+    teamlist = get_list_of_teams(cursor)
+    return len(teamlist)
+
+def get_playercount(cursor):
+    """Get a count of players."""
+    playerlist = []
+    for player in cursor.execute('SELECT * from players'):
+	playerlist.append(player[0])
+    return len(playerlist)
 
 def make_friendleader(player, teamname, cursor):
     """Make player friendleader of teamname."""
@@ -71,7 +84,33 @@ def add_player_to_players(player, email, notes, cursor):
     cursor.execute('INSERT into players (dwname, email, notes) values (?,?,?)', array)
     dbconn.commit()
     return
-    
+
+def get_team_display_line(team, cursor):
+    """Make the display line that goes into the teams table.
+    Format is csstype, count, teamname, fl, stringofallplayers."""
+    array=(team,)
+    cursor.execute('SELECT * from teams where name=?', array)
+    teamdatalist = cursor.fetchone()
+    teamname = re.sub('<', '&lt;', teamdatalist[0])
+    teamname = re.sub('>', '&gt;', teamname)
+    if teamdatalist[2]:
+	friendleader = teamdatalist[2]
+    else: 
+	friendleader = "None! You should sign up :D"
+    count = 1 # teams shouldn't exist empty
+    stringofallplayers = teamdatalist[3]
+    for x in [4,5,6,7,8,9,10,11,12,13,14,15]:
+        if teamdatalist[x]:
+	    count = count + 1
+            stringofallplayers = stringofallplayers + ', ' + teamdatalist[x]
+    csstype = 'roster_teamslots'
+    if count < 5:
+	csstype = 'roster_teamslots_small'
+    if count > 12:
+	csstype = 'roster_teamslots_full'
+    return (csstype, count, teamname, friendleader, stringofallplayers)
+
+
 def add_player_to_team(player, teamname, flwilling, email, notes, cursor):
     """Adds a player to a team. If the team is full, errors out.
        If the player is already on the team, continue without changes.
