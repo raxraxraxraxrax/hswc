@@ -159,7 +159,7 @@ written to the requesting browser.
     def doTeams(self):
 	"""Show the page with all of the teams on it. Right now, empty."""
 	teamcount = str(hswc.get_teamcount(cursor))
-	playercount = str(hswc.get_teamcount(cursor))
+	playercount = str(hswc.get_playercount(cursor))
 
 	self.send_response(200)
 	self.wfile.write('''\
@@ -288,8 +288,6 @@ table {
 
 <table>''' % (teamcount,playercount))
         
-        # DO STUFF TO MAKE A TABLE HERE
-
 	allteams = hswc.get_list_of_teams(cursor)
 	for team in allteams:
 	    displayline = hswc.get_team_display_line(team, cursor)
@@ -332,13 +330,15 @@ table {
         openid_url = self.query.get('username')
 	email = self.query.get('email')
 	team = self.query.get('team')
+	team = hswc.scrub_team(team)
+	contentnotes = self.query.get('contentnotes')
 	if self.query.get('FL') == 'yes':
             flwilling = 1
 	else:
 	    # if they didn't check anything we assume they do not want to
 	    # be a friendleader. that seems best here.
             flwilling = 0
-	contentnotes = self.query.get('content-tags')
+	#contentnotes = self.query.get('content-tags')
 
 	# You have to get the rules check right.
 	if (self.query.get('rules-check')).strip() != 'I certify that I have read and will abide by the Rules and Regulations of the 2014 HSWC.':
@@ -368,9 +368,20 @@ table {
 
 	# There has to be a username.
         if not openid_url:
-            self.render('Enter a DreamWidth username.',
+            self.render('Please enter a DreamWidth username.',
                         css_class='error', form_contents=(openid_url,email,team,contentnotes))
             return 
+
+        # The team can't be full. 
+	if hswc.get_team_members_count(team, cursor) >=13:
+	    if not player_is_on_team(openid_url, team, cursor):
+		self.render('That team is full and you are not on it, sorry.',
+		            css_class='error', form_contents=(openid_url,email,team,contentnotes))
+		return
+
+        # We want this to go through, so we make an entry in the pending table.
+        hswc.make_pending_entry(openid_url, email, team, flwilling, contentnotes, cursor)
+	dbconn.commit()
 
         # Now add the DW part of the string --- we don't want other OpenID
 	# providers because they are cubeless and shall surely be put to
@@ -460,7 +471,25 @@ table {
         pape_resp = None
         css_class = 'error'
         display_identifier = info.getDisplayIdentifier()
-        print 'display_identifier is ' + display_identifier
+        # There has to be a username.
+        if not display_identifier:
+            self.render('Please enter a DreamWidth username.',
+                        css_class='error', form_contents=('','','',''))
+            return
+	dwname = (display_identifier.split('.')[0]).split('//')[1]
+	openid_url = dwname
+
+	pending_entry = hswc.retrieve_pending_entry(dwname, cursor)
+	if not pending_entry:
+	    self.render('The software choked and lost your preferences, sorry. Kick rax.',
+			css_class='error', form_contents=(dwname,'','',''))
+	    return
+        email = pending_entry[1]
+	team = pending_entry[2]
+	flwilling = pending_entry[3]
+	contentnotes = pending_entry[4]
+        hswc.remove_pending_entry(dwname, cursor)
+	dbconn.commit()
 
         if info.status == consumer.FAILURE and display_identifier:
             # In the case of failure, if info is non-None, it is the
@@ -485,6 +514,62 @@ table {
             #pape_resp = pape.Response.fromSuccessResponse(info)
 
 	    # MAGIC MARKER 
+          
+	    # If they're not in the database yet at all, add them without a team.
+	    # This way they're logged even if their team falls through for some reason
+	    # and we can track them down. Plus we can now depend on them existing
+	    # for the rest of this code block.
+	    if not hswc.player_exists(openid_url, cursor):
+		hswc.add_player_to_players(openid_url, email, contentnotes, cursor)
+		dbconn.commit()
+
+	    #If the player is already on the team, just update 
+	    if hswc.player_is_on_team(openid_url, team, cursor):
+		if flwilling == 0:
+		    # they don't want to be friendleader so nothing changes
+	            hswc.update_player(openid_url, email, contentnotes, team, cursor)
+		    dbconn.commit()
+		    self.render('No change to team, personal information updated.', css_class='alert',
+			        form_contents=(openid_url,email, team, contentnotes))
+		    return
+	        else:
+		    # they do want to be friendleader so if no one else is, they get the slot
+	            if not hswc.team_has_friendleader(team, cursor):
+                        hswc.make_friendleader(openid_url, team, cursor)
+			hswc.update_player(openid_url, email, contentnotes, team, cursor)
+			dbconn.commit()
+			self.render('Became friendleader of %s.' % team, css_class='alert',
+			            form_contents=(openid_url, email, team, contentnotes))
+			return
+
+            # Try to add them to whatever team they want to be on.
+            oldteam = hswc.get_current_team(openid_url, cursor)
+	    errorstatus = hswc.add_player_to_team(openid_url, team, flwilling, email, contentnotes, cursor)
+	    dbconn.commit()
+	    teamclean = re.sub('<', '&lt;', team)
+	    teamclean = re.sub('>', '&gt;', teamclean)
+	    if errorstatus:
+		# some belunkus error got passed back, don't remove from old team
+		self.render(errorstatus, css_class='alert', form_contents=(openid_url, email, team, contentnotes))
+		return
+            print 'oldteam:'
+            print oldteam
+	    if oldteam:
+                print 'yes oldteam'
+		if oldteam != team:
+                    print 'yes oldteam is not team'
+		    hswc.remove_player_from_team(openid_url, oldteam, cursor)
+		    dbconn.commit()
+		    oldteamclean = re.sub('<', '&lt;', oldteam)
+		    oldteamclean = re.sub('>', '&gt;', oldteamclean)
+		    self.render('Added %s to %s, removing them from %s!' % (openid_url, teamclean, oldteamclean), css_class='alert', 
+				form_contents=(openid_url, email, team, contentnotes))
+		    return
+	    self.render('Added %s to %s!' % (openid_url, teamclean), css_class='alert',
+			form_contents=(openid_url, email, team, contentnotes))
+	    return
+
+
 
         elif info.status == consumer.CANCEL:
             # cancelled
@@ -695,7 +780,7 @@ switching teams).
 content that may be potentially upsetting and is not a place for 
 sarcastic comments or jokes. Misusing the tag request form may result in
  your removal from the HSWC.</span><br />
-	<textarea name="content-tags" rows="5" cols="70">&nbsp;</textarea>
+	<textarea name="contentnotes" rows="5" cols="70">&nbsp;</textarea>
 </p>
 
 <p>
