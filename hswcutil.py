@@ -46,6 +46,8 @@ def team_exists(teamname, cursor):
     """See if a team exists in the database or not. If yes, return 1,
       if not return 0."""
     array = (teamname,) # for sanitizing
+    if teamname == 'noir':
+	return 1
     cursor.execute('SELECT * from teams where name=?', array)
     if cursor.fetchone():
         return 1 
@@ -83,6 +85,10 @@ def get_current_team(player, cursor):
     if currentteam:
 	return currentteam[3]
     else:
+	cursor.execute('SELECT * from noir where dwname=?', array)
+	noirstatus = cursor.fetchone()
+	if noirstatus:
+	    return 'noir'
 	return 0
     
 def add_team(teamname, cursor):
@@ -95,6 +101,9 @@ def add_team(teamname, cursor):
 def remove_team(teamname, cursor):
     """Delete a team."""
     array = (teamname,)
+    if teamname == 'noir':
+	# don't delete noir
+	return
     cursor.execute('DELETE from teams where name=?', array)
     #dbconn.commit()
     return
@@ -104,6 +113,7 @@ def get_list_of_teams(cursor):
     teamlist = []
     for team in cursor.execute('SELECT * from teams'):
         teamlist.append(team[0]) # man isn't it cool that order matters
+    teamlist.append('noir')
     # soni doesn't like it alphabetical
     # teamlist.sort()
     return teamlist
@@ -120,6 +130,17 @@ def get_playercount(cursor):
 	playerlist.append(player[0])
     return len(playerlist)
 
+def get_friendleader(team, cursor):
+    """Get the friendleader of a team, if one exists."""
+    array = (team, )
+    if not team_exists(team, cursor):
+	return 0
+    if team == 'noir':
+	return 'worldcup-mods'
+    cursor.execute('SELECT * from teams where name=?', array)
+    teamrow = cursor.fetchone()
+    return teamrow[2]
+
 def make_friendleader(player, teamname, cursor):
     """Make player friendleader of teamname."""
     array = (player, teamname)
@@ -128,9 +149,25 @@ def make_friendleader(player, teamname, cursor):
     #dbconn.commit()
     return
 
+def remove_player_from_noir(player, cursor):
+    """Remove a player from noir."""
+    array = (player,)
+    cursor.execute('DELETE from noir where dwname=?', array)
+    #dbconn.commit()
+    return
+
+def add_player_to_noir(player, cursor):
+    """Add a player to noir."""
+    array = (player,)
+    cursor.execute('INSERT into noir (dwname) values (?)', array)
+    return
+
 def remove_player_from_team(player, teamname, cursor):
     """Remove a player from a team, presumably because they joined another."""
     array = (teamname,)
+    if teamname == 'noir':
+	remove_player_from_noir(player, cursor)
+	return
     cursor.execute('SELECT * from teams where name=?', array)
     teamdatalist = cursor.fetchone()
     if teamdatalist[2] == player:
@@ -157,7 +194,7 @@ def remove_player_from_team(player, teamname, cursor):
 def update_player(player, email, notes, teamname, cursor):
     """Update the player's information in the db after a new form submission."""
     array=(email, notes, teamname, player)
-    cursor.execute('UPDATE players set (email=?, notes=?, team=?) where dwname=?', array)
+    cursor.execute('UPDATE players set email=?, notes=?, team=? where dwname=?', array)
     #dbconn.commit()
     return
 
@@ -174,6 +211,8 @@ def get_team_members_count(team, cursor):
     array=(team,)
     if not team_exists(team, cursor):
 	return 0
+    if team == 'noir':
+	return get_noir_members_count(cursor)
     cursor.execute('SELECT * from teams where name=?',array)
     teamdatalist = cursor.fetchone()
     count = 0
@@ -182,9 +221,33 @@ def get_team_members_count(team, cursor):
 	    count = count + 1
     return count
 
+def get_noir_members_count(cursor):
+    """How many players on team noir?"""
+    cursor.execute('SELECT * from noir')
+    noirlist = cursor.fetchall()
+    return len(noirlist)
+
+def get_noir_members_list(cursor):
+    """Which players are on team noir?"""
+    cursor.execute('SELECT * from noir')
+    noirlist = cursor.fetchall()
+    if not noirlist:
+	return ['nobody']
+    noirplayers = []
+    for x in noirlist:
+	noirplayers.append(x[0])
+    noirplayers.sort()
+    return noirplayers
+
 def player_is_on_team(player, team, cursor):
     """Is the player on the team?"""
     array=(team,)
+    if team == 'noir':
+        noir_members = get_noir_members_list(cursor)
+	for x in noir_members:
+	    if player == x:
+		return 1
+	return 0
     if not team_exists(team, cursor):
 	return 0
     cursor.execute('SELECT * from teams where name=?',array)
@@ -198,6 +261,14 @@ def get_team_display_line(team, cursor):
     """Make the display line that goes into the teams table.
     Format is csstype, count, teamname, fl, stringofallplayers."""
     array=(team,)
+    teamname = re.sub('<', '&lt;', team)
+    teamname = re.sub('>', '&gt;', teamname)
+    if teamname == 'noir':
+	stringofallplayers = 'Please see the noir page at link.'
+	csstype= 'roster_teamslots'
+	count = get_noir_members_count(cursor)
+	friendleader = 'worldcup-mods'
+	return (csstype, count, teamname, friendleader, stringofallplayers)
     cursor.execute('SELECT * from teams where name=?', array)
     teamdatalist = cursor.fetchone()
     teamname = re.sub('<', '&lt;', teamdatalist[0])
@@ -212,8 +283,6 @@ def get_team_display_line(team, cursor):
         if teamdatalist[x]:
 	    count = count + 1
             stringofallplayers = stringofallplayers + ', ' + teamdatalist[x]
-    if teamname == 'noir':
-	stringofallplayers = 'Please see the noir page.'
     csstype = 'roster_teamslots'
     if count < 5:
 	csstype = 'roster_teamslots_small'
@@ -227,6 +296,11 @@ def add_player_to_team(player, teamname, flwilling, email, notes, cursor):
        If the player is already on the team, continue without changes.
        If the player is willing and there is no friendleader, FLify them.
        If the team has at least 5 members, make it active."""
+
+    if teamname == 'noir':
+	add_player_to_noir(player, cursor)
+	cursor.execute('UPDATE players set team=? where dwname=?', ('noir', player))
+	return
 
     if not team_exists(teamname, cursor):
         add_team(teamname, cursor)
@@ -310,6 +384,9 @@ def scrub_team(team):
     elif re.search('c3<', string):
         namelist = string.split('c3<')
         shipsymbol = 'c3<'
+    elif re.search('o8<', string):
+	namelist = string.split('o8<')
+	shipsymbol = 'c3<'
     elif re.search('abstrata', string):
         return 'abstrata'
     elif re.search('noir', string):

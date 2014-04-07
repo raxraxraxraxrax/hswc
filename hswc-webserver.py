@@ -144,6 +144,10 @@ written to the requesting browser.
                 self.doProcess()
 	    elif path == '/teams':
 		self.doTeams()
+	    elif path == '/noir':
+		self.doNoir()
+	    elif path == '/test':
+		self.doTest()
             else:
                 self.notFound()
 
@@ -156,8 +160,172 @@ written to the requesting browser.
             self.end_headers()
             self.wfile.write(cgitb.html(sys.exc_info(), context=10))
 
+    def doTest(self):
+	"""fuck me"""
+        print "I got this far 1" 
+	self.send_response(200)
+	print "I got this far 2"
+	self.wfile.write('''\
+<head>
+        <title>
+        HSWC 2014 TEAM NOIR ROSTER
+        </title>
+ 
+</head><body>
+ 
+        <h1>
+        HSWC 2014 Team Noir Roster
+        </h1>
+ 
+</body>
+</html>''')
+	print "I got this far 3"
+
+    def doNoir(self):
+	"""Show the noir list page."""
+	noircount = str(hswc.get_noir_members_count(cursor))
+        noirplayers = hswc.get_noir_members_list(cursor)
+
+        self.send_response(200)
+        self.wfile.write('''\
+<head>
+        <title>
+        HSWC 2014 TEAM NOIR ROSTER
+        </title>
+ 
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="refresh" content="300" />
+        <meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+ 
+        <style type="text/css" media="all">
+html, body {   
+        font-family: Verdana,Arial,"Liberation Sans",sans-serif;
+        color: #000;
+        font-size: 11pt;
+        background-color: #e5e4e5;
+}
+ 
+a:link, a:visited {
+        color: #3c3c89;
+        font-weight:bold;
+        text-decoration: none;
+}
+ 
+a:hover {
+        color: #4e5273;
+        font-weight:bold;
+        text-decoration: underline;
+}
+ 
+h1 {
+        font-size: 18pt;
+        text-transform: uppercase;
+        color: #3c3c89;
+        text-align: center;
+}
+ 
+.navigation {
+        margin-left: auto;
+        margin-right: auto;    
+        text-align: center;
+        border-top: 1px #4e5273 solid;
+        width:50%;
+        padding: 22px 0px 10px 0px;
+}
+ 
+.tally {
+        margin-left: auto;
+        margin-right: auto;    
+        text-align: center;
+        background-color: #f9f9f9;
+        padding: 3px;
+        width: 540px;
+        border-radius:10px;
+}
+ 
+table {
+        width: 80%;
+        background-color: #fff;
+        padding: 20px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top:1%;
+        border-radius:10px;
+        box-shadow:5px 5px #babad5;
+}
+ 
+.roster_teamname {
+        background-color:#CCCCFF;
+        font-size:15pt;
+        text-transform:lowercase;
+        width: 100%;
+        text-align: right;
+        padding: 7px;
+}
+ 
+.noir_members {
+        padding: 3px 0px 15px 15px;
+        text-transform:lowercase;
+        width: 100%;
+}
+        </style>
+</head><body>
+ 
+        <h1>
+        HSWC 2014 Team Noir Roster
+        </h1>''')
+
+        self.wfile.write('''\
+ 
+<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+ 
+<p class="tally">
+        There are currently <strong>%s participants</strong> in Team Noir.<br />
+        This page will automatically update every <strong>5 minutes</strong>.
+</p>
+ 
+<table>
+ 
+<tr>
+        <td class="roster_teamname">
+        Noir
+        </td>
+</tr>
+<tr>
+        <td class="noir_members">''' % noircount)
+
+        # MAGIC MARKER
+        # DO NOIR LOGIC
+        # THIS CODE SUCKS I AM TIRED
+
+
+        noirdict = {}
+        for x in noirlist:
+	    firstchar = x[0]
+	    if firstchar in noirdict: 
+	        noirdict[firstchar] = noirdict[firstchar] + ', ' + x
+            else:
+		noirdict[firstchar] = x
+
+        for x in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','q','0','1','2','3','4','5','6','7','8','9']:
+	    if x in noirdict:
+	        #self.wfile.write('''\
+#<p><span class="noir_%s" style="font-weight:bold;text-transform:none">#:</span>%s</p>''' % (x, noirdict[x]))
+                print noirdict[x]
+
+        self.wfile.write('''\
+</td>
+</tr>
+</table>
+ 
+<p style="text-align:center;"><img src="http://i.imgur.com/GtSM6ie.png" alt="The four Homestuck quadrant symbols." /></p>
+ 
+</body>
+</html>''')
+
+
     def doTeams(self):
-	"""Show the page with all of the teams on it. Right now, empty."""
+	"""Show the page with all of the teams on it."""
 	teamcount = str(hswc.get_teamcount(cursor))
 	playercount = str(hswc.get_playercount(cursor))
 
@@ -171,7 +339,7 @@ Content-type: text/html; charset=UTF-8
 	</title>
 
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-	<meta http-equiv="refresh" content="50000" />
+	<meta http-equiv="refresh" content="300" />
 	<meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
 
 	<style type="text/css" media="all">
@@ -283,7 +451,7 @@ table {
 
 <p class="tally">
 	There are currently <strong>%s teams</strong> and <strong>%s participants</strong> in the HSWC.<br />
-	This page will automatically update every X minutes.
+	This page will automatically update every 5 minutes.
 </p>
 
 <table>''' % (teamcount,playercount))
@@ -315,7 +483,7 @@ table {
         self.wfile.write('''\
 </table>
 
-<p style="text-align: center;font-size: 12pt;"><span style="color: red">&hearts;</span> <span style="color: gray">&clubs;</span> <span style="color: pink">&diams;</span> &spades;</p>
+<p style="text-align:center"><img src="http://i.imgur.com/GtSM6ie.png" alt="Homestuck's four quadrant symbols" /></p>
 
 </body>
 </html>''')
@@ -328,9 +496,13 @@ table {
 
         # First, collect all the data.
         openid_url = self.query.get('username')
+	openid_url = re.sub('_','-',openid_url)
+	if openid_url:
+	    openid_url = openid_url.lower()
 	email = self.query.get('email')
 	team = self.query.get('team')
-	team = hswc.scrub_team(team)
+	if team:
+	    team = hswc.scrub_team(team)
 	contentnotes = self.query.get('contentnotes')
 	if self.query.get('FL') == 'yes':
             flwilling = 1
@@ -340,6 +512,12 @@ table {
             flwilling = 0
 	#contentnotes = self.query.get('content-tags')
 
+	# You have to even enter the rules check.
+	if not self.query.get('rules-check'):
+	    self.render('Please enter the rules check text.', css_class='error',
+			form_contents=(openid_url,email,team,contentnotes))
+	    return
+	
 	# You have to get the rules check right.
 	if (self.query.get('rules-check')).strip() != 'I certify that I have read and will abide by the Rules and Regulations of the 2014 HSWC.':
 	   self.render('Please enter the correct rules check text.', css_class='error',
@@ -350,6 +528,11 @@ table {
 	if not team:
             self.render('Please enter a team name.', css_class='error',
 			form_contents=(openid_url,email,team,contentnotes))
+	    return
+        if re.search('team', team) or re.search('/', team) or re.search('&', team) or re.search(';', team):
+		self.render('Team formatted incorrectly, see <a href="http://hswc-announce.tumblr.com/post/49934185410/how-to-write-ship-names">How To Format Ship Names</a>.', css_class='error',
+			    form_contents=(openid_url,email,team,contentnotes))
+		return
 	team = hswc.scrub_team(team)
 	if not team:
 	    self.render('Please enter a valid team name.', css_class='error',
@@ -368,13 +551,14 @@ table {
 
 	# There has to be a username.
         if not openid_url:
-            self.render('Please enter a DreamWidth username.',
+            self.render('Please enter a Dreamwidth username.',
                         css_class='error', form_contents=(openid_url,email,team,contentnotes))
             return 
+        
 
         # The team can't be full. 
-	if hswc.get_team_members_count(team, cursor) >=13:
-	    if not player_is_on_team(openid_url, team, cursor):
+	if hswc.get_team_members_count(team, cursor) >=13 and team != 'noir':
+	    if not hswc.player_is_on_team(openid_url, team, cursor):
 		self.render('That team is full and you are not on it, sorry.',
 		            css_class='error', form_contents=(openid_url,email,team,contentnotes))
 		return
@@ -425,9 +609,9 @@ table {
                     self.requestPAPEDetails(request)
 
                 trust_root = self.server.base_url
-                print 'trust_root is ' + trust_root
+                #print 'trust_root is ' + trust_root
                 return_to = self.buildURL('process')
-                print 'return_to is ' + return_to
+                #print 'return_to is ' + return_to
                 if request.shouldSendRedirect():
                     redirect_url = request.redirectURL(
                         trust_root, return_to, immediate=immediate)
@@ -473,7 +657,7 @@ table {
         display_identifier = info.getDisplayIdentifier()
         # There has to be a username.
         if not display_identifier:
-            self.render('Please enter a DreamWidth username.',
+            self.render('Please enter a Dreamwidth username.',
                         css_class='error', form_contents=('','','',''))
             return
 	dwname = (display_identifier.split('.')[0]).split('//')[1]
@@ -522,11 +706,24 @@ table {
 	    if not hswc.player_exists(openid_url, cursor):
 		hswc.add_player_to_players(openid_url, email, contentnotes, cursor)
 		dbconn.commit()
+            
+	    teamclean = re.sub('<', '&lt;', team)
+	    teamclean = re.sub('>', '&gt;', teamclean)
+	    if flwilling == '0':
+		flwilling = 0
 
 	    #If the player is already on the team, just update 
 	    if hswc.player_is_on_team(openid_url, team, cursor):
-		if flwilling == 0:
-		    # they don't want to be friendleader so nothing changes
+		# this got stringified by putting it into the db and taking it out again
+		# THAT'S WHY NOTHING WAS WORKING
+		if not flwilling:
+		    # they don't want to be friendleader so nothing changes unless they already are
+                    if hswc.get_friendleader(team, cursor) == openid_url:
+			hswc.make_friendleader('', team, cursor)
+			dbconn.commit()
+			self.render('You are no longer the %s friendleader.' % teamclean, css_class='alert',
+		                    form_contents=(openid_url, email, team, contentnotes))
+			return
 	            hswc.update_player(openid_url, email, contentnotes, team, cursor)
 		    dbconn.commit()
 		    self.render('No change to team, personal information updated.', css_class='alert',
@@ -538,9 +735,15 @@ table {
                         hswc.make_friendleader(openid_url, team, cursor)
 			hswc.update_player(openid_url, email, contentnotes, team, cursor)
 			dbconn.commit()
-			self.render('Became friendleader of %s.' % team, css_class='alert',
+			self.render('Became friendleader of %s.' % teamclean, css_class='alert',
 			            form_contents=(openid_url, email, team, contentnotes))
 			return
+		    else:
+                        hswc.update_player(openid_url, email, contentnotes, team, cursor)
+                        dbconn.commit()
+                        self.render('No change to team, personal information updated.', css_class='alert',
+                                    form_contents=(openid_url,email, team, contentnotes))
+                        return
 
             # Try to add them to whatever team they want to be on.
             oldteam = hswc.get_current_team(openid_url, cursor)
@@ -552,17 +755,13 @@ table {
 		# some belunkus error got passed back, don't remove from old team
 		self.render(errorstatus, css_class='alert', form_contents=(openid_url, email, team, contentnotes))
 		return
-            print 'oldteam:'
-            print oldteam
 	    if oldteam:
-                print 'yes oldteam'
 		if oldteam != team:
-                    print 'yes oldteam is not team'
 		    hswc.remove_player_from_team(openid_url, oldteam, cursor)
 		    dbconn.commit()
 		    oldteamclean = re.sub('<', '&lt;', oldteam)
 		    oldteamclean = re.sub('>', '&gt;', oldteamclean)
-		    self.render('Added %s to %s, removing them from %s!' % (openid_url, teamclean, oldteamclean), css_class='alert', 
+		    self.render('%s added to %s and removed from %s!' % (openid_url, teamclean, oldteamclean), css_class='alert', 
 				form_contents=(openid_url, email, team, contentnotes))
 		    return
 	    self.render('Added %s to %s!' % (openid_url, teamclean), css_class='alert',
@@ -609,11 +808,11 @@ query parameters added."""
     def render(self, message=None, css_class='alert', form_contents=None,
                status=200, title="Homestuck Shipping World Cup",
                sreg_data=None, pape_data=None):
-        """Render a page."""
+        """Render the signup page."""
         self.send_response(status)
         self.pageHeader(title)
         if message:
-	    print message
+	    #print message
             self.wfile.write("<div class='%s'>" % (css_class,))
             self.wfile.write(message)
             self.wfile.write("</div>")
@@ -622,7 +821,7 @@ query parameters added."""
     def pageHeader(self, title):
         """Render the page header"""
         self.setSessionCookie()
-	print (title, title, quoteattr(self.buildURL('verify')))
+	#print (title, title, quoteattr(self.buildURL('verify')))
         self.wfile.write('''\
 Content-type: text/html; charset=UTF-8
 
@@ -736,7 +935,7 @@ input, textarea {
 	HSWC 2014 Sign Up Form
 	</h1>
 
-<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Teams</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Teams</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
 ''')
 
     def pageFooter(self, form_contents):
@@ -771,7 +970,7 @@ switching teams).
 
 <p>
 	<span class="field">Would you like to volunteer to be the team's <a href="http://autumnfox.akrasiac.org/hswcrules/Teams#Friendleaders">Friendleader?</a>:</span><br />
-	<input name="FL" value="yes" type="radio" />Yes &nbsp; <input name="FL" value="no" type="radio" />No
+	<input name="FL" value="yes" type="radio" />Yes &nbsp; <input name="FL" value="no" type="radio" checked/>No
 </p>
 
 <p>
@@ -792,9 +991,8 @@ sarcastic comments or jokes. Misusing the tag request form may result in
 
 </form>
 
-<p style="text-align: center;font-size: 12pt;"><span style="color: red">&hearts;</span> 
-<span style="color: gray">&clubs;</span> <span style="color: pink">&diams;</span> &spades;</p>
- 
+<p style="text-align:center"><img src="http://i.imgur.com/GtSM6ie.png" alt="Homestuck's four quadrant symbols" /></p>
+
 </body></html>
 ''' % (quoteattr(self.buildURL('verify')),))
 

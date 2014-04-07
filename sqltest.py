@@ -81,6 +81,9 @@ def add_player_to_team(player, teamname, flwilling, email, tumblr):
     if not player_exists(player):
         add_player_to_players(player, email, tumblr)
 
+    if not team_exists(teamname):
+        add_team(teamname)
+
     if team_exists(teamname):  
         array = (teamname,)
         cursor.execute('SELECT * from teams where name=?', array)
@@ -123,15 +126,35 @@ def add_player_to_team(player, teamname, flwilling, email, tumblr):
                 return
             else:
                 print "handle error because team is full" 
-                return
+                return 1
         else:
             print "I guess pass since you are already on the team?"
             if not friendleader:
                 if flwilling:
                     make_friendleader(player, teamname)
     else:
-        print "handle error because team doesn't exist"
-    return
+        print "handle error because team doesn't exist after creating it"
+    return 1
+
+def handle_incoming_player(datarow):
+    """Get a full row of data from the hypothetical webform and do
+       the needful."""
+
+    # split the row into all of the relevant data
+
+    # make sure they typed in the check correctly
+    if checkstring != "whatever the checkstring is":
+        print "checkstring is wrong"
+        return 1
+
+    # if the player does not exist, add them to the table
+    if not player_exists(name):
+        add_player_to_players(player,email,tumblr)
+    
+    # add them
+    status = add_player_to_team(however,this, works)
+
+    return status
 
 
 if __name__ == "__main__":
