@@ -59,7 +59,7 @@ it's set up in Apache2.
         if self.server_port != 80:
 #            self.base_url = ('http://%s:%s/' %
 #                             (self.server_name, self.server_port))
-             self.base_url = 'http://autumnfox.akrasiac.org/hswctest'
+             self.base_url = 'http://autumnfox.akrasiac.org/hswc'
         else:
             self.base_url = 'http://%s/' % (self.server_name,)
 
@@ -162,10 +162,9 @@ written to the requesting browser.
 
     def doTest(self):
 	"""fuck me"""
-        print "I got this far 1" 
 	self.send_response(200)
-	print "I got this far 2"
 	self.wfile.write('''\
+Content-type: text/html; charset=UTF-8
 <head>
         <title>
         HSWC 2014 TEAM NOIR ROSTER
@@ -180,6 +179,7 @@ written to the requesting browser.
 </body>
 </html>''')
 	print "I got this far 3"
+	return
 
     def doNoir(self):
 	"""Show the noir list page."""
@@ -188,6 +188,8 @@ written to the requesting browser.
 
         self.send_response(200)
         self.wfile.write('''\
+Content-type: text/html; charset=UTF-8
+
 <head>
         <title>
         HSWC 2014 TEAM NOIR ROSTER
@@ -298,6 +300,7 @@ table {
         # DO NOIR LOGIC
         # THIS CODE SUCKS I AM TIRED
 
+        noirlist = hswc.get_noir_members_list(cursor)
 
         noirdict = {}
         for x in noirlist:
@@ -307,11 +310,10 @@ table {
             else:
 		noirdict[firstchar] = x
 
-        for x in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','q','0','1','2','3','4','5','6','7','8','9']:
+        for x in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9']:
 	    if x in noirdict:
-	        #self.wfile.write('''\
-#<p><span class="noir_%s" style="font-weight:bold;text-transform:none">#:</span>%s</p>''' % (x, noirdict[x]))
-                print noirdict[x]
+	        self.wfile.write('''\
+<p><span class="noir_%s" style="font-weight:bold;text-transform:none">%s:</span>%s</p>''' % (x,x, noirdict[x]))
 
         self.wfile.write('''\
 </td>
@@ -501,9 +503,17 @@ table {
 	    openid_url = openid_url.lower()
 	email = self.query.get('email')
 	team = self.query.get('team')
-	if team:
-	    team = hswc.scrub_team(team)
 	contentnotes = self.query.get('contentnotes')
+	if team:
+            # everything depends on unicode type strings BUT
+	    # if someone tries to paste in unicode ship symbols everything goes to hell
+	    asciiteam = team.encode('ascii', 'ignore')
+	    convertedteam = unicode(asciiteam)
+	    if not team == convertedteam:
+                self.render('Please do not use unicode characters in team names.', css_class='error',
+			    form_contents=(openid_url,email,team,contentnotes))
+		return
+	    team = hswc.scrub_team(team)
 	if self.query.get('FL') == 'yes':
             flwilling = 1
 	else:
@@ -557,7 +567,7 @@ table {
         
 
         # The team can't be full. 
-	if hswc.get_team_members_count(team, cursor) >=13 and team != 'noir':
+	if hswc.get_team_members_count(team, cursor) >=13 and team != 'noir' and team != 'abstrata' and team != 'abstrata2' and team != 'abstrata3' and team != 'abstrata4':
 	    if not hswc.player_is_on_team(openid_url, team, cursor):
 		self.render('That team is full and you are not on it, sorry.',
 		            css_class='error', form_contents=(openid_url,email,team,contentnotes))
@@ -648,7 +658,7 @@ table {
 #        url = 'http://'+self.headers.get('Host')+self.path
 	# rax: hardcoding this for maximum bullshit
         # this makes me not just a bad programmer but a bad person
-        url = 'http://autumnfox.akrasiac.org/hswctest/'+ self.path.strip('/')
+        url = 'http://autumnfox.akrasiac.org/hswc/'+ self.path.strip('/')
         info = oidconsumer.complete(self.query, url)
 
         sreg_resp = None
@@ -711,6 +721,9 @@ table {
 	    teamclean = re.sub('>', '&gt;', teamclean)
 	    if flwilling == '0':
 		flwilling = 0
+
+	    #if team == 'remove':
+	#	currentteam = hswc.get_current_player
 
 	    #If the player is already on the team, just update 
 	    if hswc.player_is_on_team(openid_url, team, cursor):

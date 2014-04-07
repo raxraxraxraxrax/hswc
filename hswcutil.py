@@ -264,7 +264,7 @@ def get_team_display_line(team, cursor):
     teamname = re.sub('<', '&lt;', team)
     teamname = re.sub('>', '&gt;', teamname)
     if teamname == 'noir':
-	stringofallplayers = 'Please see the noir page at link.'
+	stringofallplayers = 'Please see the noir page at <a href="http://autumnfox.akrasiac.org/hswc/noir">this link</a>.'
 	csstype= 'roster_teamslots'
 	count = get_noir_members_count(cursor)
 	friendleader = 'worldcup-mods'
@@ -348,6 +348,21 @@ def add_player_to_team(player, teamname, flwilling, email, notes, cursor):
                 #dbconn.commit()
                 return
             else:
+		if teamname == 'abstrata':
+		    # abstrata is full, go to next abstrata
+		    status = add_player_to_team(player, 'abstrata2', flwilling, email, notes, cursor)
+		    return status
+	        elif teamname == 'abstrata2':
+		    status = add_player_to_team(player, 'abstrata3', flwilling, email, notes, cursor)
+		    return status
+	        elif teamname == 'abstrata3':
+		    status = add_player_to_team(player, 'abstrata4', flwilling, email, notes, cursor)
+		    return status
+	        elif teamname == 'abstrata4':
+	            status = add_player_to_team(player, 'abstrata5', flwilling, email, notes, cursor)
+		    return status
+	        elif teamname == 'abstrata5':
+		    return "Rax didn't make enough abstrata teams, tell them they were wrong"
                 return "Sorry, that team filled up due to a race condition."
         else:
             if not friendleader:
