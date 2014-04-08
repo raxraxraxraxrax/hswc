@@ -198,6 +198,7 @@ Content-type: text/html; charset=UTF-8
         <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
         <meta http-equiv="refresh" content="300" />
         <meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+        <link rel="shortcut icon" href="http://autumnfox.akrasiac.org/permalinks/hswc.ico">
  
         <style type="text/css" media="all">
 html, body {   
@@ -343,6 +344,7 @@ Content-type: text/html; charset=UTF-8
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta http-equiv="refresh" content="300" />
 	<meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+        <link rel="shortcut icon" href="http://autumnfox.akrasiac.org/permalinks/hswc.ico">
 
 	<style type="text/css" media="all">
 html, body {	
@@ -461,7 +463,8 @@ table {
 	allteams = hswc.get_list_of_teams(cursor)
 	for team in allteams:
 	    displayline = hswc.get_team_display_line(team, cursor)
-	    self.wfile.write('''\
+	    if team != 'noir':
+	        self.wfile.write('''\
 <tr>
 	<td class="%s">
 	%s/13
@@ -480,6 +483,27 @@ table {
 	<td colspan="2" class="roster_members">
 	<span style="font-weight:bold;text-transform:none">Members:</span> %s
 	</td>
+</tr>''' % displayline)
+	    else:
+                self.wfile.write('''\
+<tr>
+        <td class="%s">
+        %s
+        </td>
+
+        <td class="roster_teamname">
+        %s
+        </td>
+</tr>
+<tr>
+        <td colspan="2" class="roster_fl">
+        <span style="font-weight:bold;text-transform:none">Friendleader:</span> %s 
+        </td>
+</tr>
+<tr>
+        <td colspan="2" class="roster_members">
+        <span style="font-weight:bold;text-transform:none">Members:</span> %s
+        </td>
 </tr>''' % displayline)
 
         self.wfile.write('''\
@@ -569,7 +593,7 @@ table {
         # The team can't be full. 
 	if hswc.get_team_members_count(team, cursor) >=13 and team != 'noir' and team != 'abstrata' and team != 'abstrata2' and team != 'abstrata3' and team != 'abstrata4':
 	    if not hswc.player_is_on_team(openid_url, team, cursor):
-		self.render('That team is full and you are not on it, sorry.',
+		self.render('That team is full, sorry. Try signing up for another one!',
 		            css_class='error', form_contents=(openid_url,email,team,contentnotes))
 		return
 
@@ -722,8 +746,20 @@ table {
 	    if flwilling == '0':
 		flwilling = 0
 
-	    #if team == 'remove':
-	#	currentteam = hswc.get_current_player
+	    if team == 'remove':
+		currentteam = hswc.get_current_team(openid_url, cursor)
+		if not currentteam:
+		    self.render('Cannot remove you from no team.', css_class='error',
+				form_contents=(openid_url, email, team, contentnotes))
+		    return
+	        currentteamclean = re.sub('<', '&lt;', currentteam)
+		currentteamclean = re.sub('>', '&gt;', currentteamclean)
+	        hswc.remove_player_from_team(openid_url, currentteam, cursor)
+		hswc.remove_player(openid_url, cursor)
+		dbconn.commit()
+		self.render('Removed you from team %s and the event.' % currentteamclean, css_class='alert',
+			    form_contents=(openid_url, email, team, contentnotes))
+		return
 
 	    #If the player is already on the team, just update 
 	    if hswc.player_is_on_team(openid_url, team, cursor):
@@ -846,6 +882,7 @@ Content-type: text/html; charset=UTF-8
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta http-equiv="refresh" content="50000" />
 	<meta name="dcterms.rights" content="Website Coding (C) 2014 HSWC Mod Team" />
+	<link rel="shortcut icon" href="http://autumnfox.akrasiac.org/permalinks/hswc.ico">
 
 	<style type="text/css" media="all">
 html, body {	
@@ -948,7 +985,7 @@ input, textarea {
 	HSWC 2014 Sign Up Form
 	</h1>
 
-<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Teams</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
 ''')
 
     def pageFooter(self, form_contents):

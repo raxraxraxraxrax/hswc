@@ -108,6 +108,13 @@ def remove_team(teamname, cursor):
     #dbconn.commit()
     return
 
+def remove_player(player, cursor):
+    """Delete a player."""
+    array = (player,)
+    cursor.execute('DELETE from players where dwname=?', array)
+    #dbconn.commit()
+    return
+
 def get_list_of_teams(cursor):
     """Get a list of all teams."""
     teamlist = []
