@@ -280,7 +280,7 @@ table {
 
         self.wfile.write('''\
  
-<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a> | <a href="http://hswc-announce.tumblr.com/post/82066717289/hswc-2014-official-chat-room">Chat</a></p>
  
 <p class="tally">
         There are currently <strong>%s participants</strong> in Team Noir.<br />
@@ -451,7 +451,7 @@ table {
 	HSWC 2014 Team Roster
 	</h1>
 
-<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"><a href="http://autumnfox.akrasiac.org/hswc/">Sign Up Form</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a> | <a href="http://hswc-announce.tumblr.com/post/82066717289/hswc-2014-official-chat-room">Chat</a></p>
 
 <p class="tally">
 	There are currently <strong>%s teams</strong> and <strong>%s participants</strong> in the HSWC.<br />
@@ -985,7 +985,7 @@ input, textarea {
 	HSWC 2014 Sign Up Form
 	</h1>
 
-<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a></p>
+<p class="navigation"> <a href="http://autumnfox.akrasiac.org/hswc/teams">Team Roster</a> | <a href="http://autumnfox.akrasiac.org/hswcrules/Mod%20Contact">Mod Contact</a> | <a href="http://hs_worldcup.dreamwidth.org">Dreamwidth</a> | <a href="http://autumnfox.akrasiac.org/hswcrules">Rules Wiki</a> | <a href="http://hswc-announce.tumblr.com">Tumblr</a> | <a href="http://hswc-announce.tumblr.com/post/82066717289/hswc-2014-official-chat-room">Chat</a></p>
 ''')
 
     def pageFooter(self, form_contents):

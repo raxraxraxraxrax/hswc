@@ -391,6 +391,15 @@ def scrub_team(team):
        If there is no valid team name, return nothing."""
 
     string = team.lower()
+    string = string.strip()
+
+    # if it has more than one ship symbol we are not touching this belunkus
+    symbolcount = 0
+    for x in ['<3<', '<3[^<]', '<>', 'c3<', 'o8<'] :
+        if re.search(x, string):
+	    symbolcount = symbolcount +1
+    if symbolcount > 1:
+	return string
 
     if string == '':
         return 0 
