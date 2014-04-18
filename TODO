@@ -1,26 +1,19 @@
-TODO: everything
+TODO: voting, crawling, scores page
 
 task 1: signup page
-(this is the only thing I think we may have done for April 8)
-
- * get OpenID proof of concept up : DONE
- * HTML mockup of signup page
- * HTML mockup of nope you have no openID page
- * can we have it reject openID that isn't DW? : YES
- * HTML mockup of final spreadsheet
- * database schema : WE HAVE ONE BUT IT'S KINDA BAD BUT WHATEVS
- * make sure everyone agrees on spec for how signup actually works
- * make new todo items once we are closer to the goal
+DONE!
+although we need to figure out how to close signups
 
 task 2: voting page
 (we don't actually need this until late May or June)
 
- * also gated by OpenID
+ * also gated by OpenID : DONE-ish?
  * HTML mockup of voting page
  * database schema
  * HTML mockup of results pages
  * again we need a spec from the full mod team
  * new todo items once we are closer to the goal
+ * we have a possible algorithm here: http://pastebin.com/ETQiyec9
 
 task 3: dreamwidth crawling
 (this we need earlier but it's low priority so I'm not touching it)
@@ -30,10 +23,14 @@ task 3: dreamwidth crawling
  * made of hair
  * it's like Jade/Condesce up in here
  * this is lower priority so think about it more later
+ * we have some notes on how Casey did this last year but the short version is "this process sucks"
+ * if we can find a non-suck way to do this that would rock
 
 other things we might want to do:
 
  * something that assigns mods to teams for liaisoning:
    this should be easy but I haven't thought about it much yet
    and how easy it is will depend on the db schema
- * some sort of drop form mirroring the signup form
+ * some sort of drop form mirroring the signup form : this sort of works you can just enter "remove"
+ * an online spreadsheet or similar that shows everyone's current score
+ 
