@@ -3,37 +3,17 @@ hswc
 
 Homestuck Shipping World Cup server code
 
-if you aren't on the HSWC mod team and are reading this, um, you're probably too early there is nothing here yet sorry
+The HSWC is a for-fun-not-blood competition where a bunch of fans join teams for various Homestuck "ships" (that is, aggregations of webcomic characters considered in romantic relationships) and produce fanworks (art, fiction, movies, &c.) based on those ships and then vote on which are best. If you're here for code and not for fandom, yes, this is some hardcore nerd shit, and also it is awesome.
 
-TODO: everything
+CURRENTLY IMPLEMENTED:
 
-brief description of goals:
+hswc-webserver.py and hswcutil.py handle signups for teams via a python webserver that can be proxied to through apache or, I guess, run directly on port 80 if you roll like that. The database that backs this is sqlite3 and the spec is in the comments of hswcutil.py. Currently missing from this code is:
 
-there are three major tasks
-the first one is letting people sign up and assign themselves to teams
-which mostly needs openid integration, ability to write to a database, and ability to make an html page with a
-huge spreadsheet/table based on that database, ideally with a bunch of links/buttons on it
-this doesn't seem that hard although it may be somewhat grindy
-(to make it autoupdate would require some javascript stuff that we might do but I am so not dealing with for a minimum feature set)
+ * how to handle signups closing
+ * truly clean dreamwidth openid authentication handling
 
-the second task is making a page that lets people vote for their favorite fanwork; based on their openID they
-get a different list, and they can only vote once, and all the votes have to be tabulated and then the results also get
-spit out as a big html table woooo
-the third task involves crawling a bunch of dreamwidth pages to see who has posted what where, and generate
-scoring based on some as yet unspecified algorithm and that data
-there may be a useful API for this or it may just be taking apart HTML, which is misery but not actually that
- _hard_
-(at least in my experience)
+There are two more tasks we'd like this codebase to handle. The first is voting, where players go to vote on main round entries for the competition and their votes are authenticated and automatically tabulated. The second is trawling through dreamwidth comments on bonus rounds, where people write or draw quick things for small numbers of points (and fun!), which requires either wrangling the dreamwidth API or getting some serious HTML parser action going. These two may or may not be completed this year.
 
-this will all be hosted on a Debian box through apache2
+If you're interested in using this code for some other fandom event poke rax, they will totally help you figure out if it's worth using this code
 
-it looks like there's an OpenID apache module I've worked with before so
-I'm going to start with that: except it's not compatible with dreamwidth
-so now I'm using python-openid and using apache to proxy to a python
-server, which is probably _sensible_ but is not how I'm used to doing 
-things so it may be a big ugly
-
-my limited experience is with python and mako for html templating so
-unless someone prefers something else we might as well use that?
-
-woo
+If you want to use this for something unrelated there... is probably better code you can start from? But hey have at and I'm happy to explain all of the bad choices I made :)
