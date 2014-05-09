@@ -22,6 +22,65 @@ import sqlite3, sys, re
 
 #cursor = dbconn.cursor()
 
+def make_fl_list(cursor):
+    """Make a list of all teams, their FLs, and their email addresses."""
+
+    cursor.execute('SELECT * from teams where active="yes"')
+    allteams = cursor.fetchall()
+    bakedteams = []
+
+    for team in allteams:
+	if not team[2]:
+            teamtuple = (team[0], 'none', 'none')
+	else:
+            fl = team[2]
+	    email = get_player_email(fl, cursor)
+	    teamtuple = (team[0], fl, email)
+	bakedteams.append(teamtuple)
+
+    return bakedteams
+
+def get_player_email(player, cursor):
+    """Get a player's email address."""
+    array = (player,)
+    cursor.execute('SELECT * from players where dwname=?', array)
+    playerdata = cursor.fetchone()
+    if not playerdata:
+	return "player does not exist"
+    return playerdata[1] 
+
+def make_team_active(team, cursor):
+    """Set the active bit on a team."""
+    string = """UPDATE teams set active='yes' where name='%s'""" % team
+    cursor.execute(string)
+    # whatever calls this has to dbconn.commit()
+    return
+
+def is_team_active(team, cursor):
+    """Return the active bit on a team."""
+    if team == 'noir':
+	return 'yes'
+
+    array = (team,)
+    cursor.execute('SELECT * from teams where name=?', array)
+    thing = cursor.fetchone()
+    if thing: 
+        activebit = thing[1]
+        return activebit
+    # team does not exist
+    return
+
+def activate_qualifying_teams(cursor):
+    """Set the active bit on all teams with 5 or more participants.
+    And all teams that are abstrata."""
+
+    teamlist = get_list_of_teams(cursor)
+    for team in teamlist:
+        count = get_team_members_count(team, cursor)
+	if count > 4:
+	    make_team_active(team, cursor)
+    return
+
 def make_pending_entry(dwname, email, team, friendleader, notes, cursor):
     """Make a pending entry to be processed if the DW auth goes through."""
     array = (dwname, email, team, friendleader, notes)

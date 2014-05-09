@@ -17,6 +17,18 @@ import sqlite3, sys
 dbconn = sqlite3.connect('hswc.db')
 cursor = dbconn.cursor()
 
+# MODES
+
+#The default mode lets any authed user sign up for anything.
+#mode = 'default' 
+
+#The switch mode lets players switch off of sinking ships, join noir,
+# or drop.
+mode = 'switch'
+
+#The drop mode only lets players drop.
+#mode = 'drop'
+
 def quoteattr(s):
     qs = cgi.escape(s, 1)
     return '"%s"' % (qs,)
@@ -589,6 +601,36 @@ table {
                         css_class='error', form_contents=(openid_url,email,team,contentnotes))
             return 
         
+        # If mode is switch, new players can only join noir,
+	#                    players on sailing ships can only drop,
+	#                    players on sinking ships can switch to sailing ones or drop
+        if mode == "switch":
+	    if not hswc.player_exists(openid_url, cursor):
+                if not team == 'noir':
+		    self.render('Sorry, new players can only join Team Noir at this point.',
+				css_class='error', form_contents=(openid_url,email,team,contentnotes))
+		    return
+	    currentteam = hswc.get_current_team(openid_url, cursor)
+	    if hswc.is_team_active(currentteam, cursor):
+		print team
+		if not team == 'remove':
+		    self.render('Sorry, players on sailing ships can only drop.',
+				css_class='error', form_contents=(openid_url,email,team,contentnotes))
+		    return
+	    if not hswc.is_team_active(team, cursor):
+		if not team == 'remove':
+		    self.render('Sorry, you can only join a sailing ship.',
+		                css_class='error', form_contents=(openid_url,email,team,contentnotes))
+		    return
+
+        # If mode is drop, all you can do is drop. That's it.
+	#
+	if mode == "drop":
+            if team != 'remove':
+		self.render('Sorry, at this point in the event all you can do is drop.',
+			    css_class='error', form_contents=(openid_url,email,team,contentnotes))
+		return
+	    
 
         # The team can't be full. 
 	if hswc.get_team_members_count(team, cursor) >=13 and team != 'noir' and team != 'abstrata' and team != 'abstrata2' and team != 'abstrata3' and team != 'abstrata4':
