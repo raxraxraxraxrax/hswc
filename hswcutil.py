@@ -22,6 +22,21 @@ import sqlite3, sys, re
 
 #cursor = dbconn.cursor()
 
+def send_inactives_to_noir(cursor):
+    """Take players on inactive teams and send them to noir."""
+    
+    allteams = get_list_of_teams(cursor)
+    
+    for team in allteams:
+	if not is_team_active(team, cursor):
+            players = get_team_members_list(team, cursor)
+	    for player in players:
+		add_player_to_noir(player, cursor)
+		remove_player_from_team(player, team, cursor)
+
+    #dbconn.commit()
+    return
+
 def make_fl_list(cursor):
     """Make a list of all teams, their FLs, and their email addresses."""
 
@@ -286,6 +301,22 @@ def get_team_members_count(team, cursor):
 	if teamdatalist[x]:
 	    count = count + 1
     return count
+
+def get_team_members_list(team, cursor):
+    """Who are the players on the team?"""
+    array = (team,)
+    if not team_exists(team, cursor):
+	return 0
+    if team == 'noir':
+	return get_noir_members_list(cursor)
+    cursor.execute('SELECT * from teams where name=?', array)
+    teamdatalist = cursor.fetchone()
+    teamplayers = []
+    for x in xrange(3,16):
+	if teamdatalist[x]:
+	    teamplayers.append(teamdatalist[x])
+
+    return teamplayers
 
 def get_noir_members_count(cursor):
     """How many players on team noir?"""
