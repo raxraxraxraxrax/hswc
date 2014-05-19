@@ -41,6 +41,7 @@ import codecs, glob, os, pickle, pprint, logging, re, sys, time, urllib, urllib2
 import xml.dom.minidom, xmlrpclib, socket
 from xml.sax import saxutils
 from optparse import OptionParser
+import hswcsecret
 
 def getsession(flat_url, username, password):
     """This routine tries to log in the user and get an LJ session token.
@@ -94,7 +95,7 @@ def test(session):
 if __name__ == '__main__':
     username = 'worldcup_mods'
     commname = 'hs_worldcup'
-    password = 'not the real password'
+    password = hswcsecret.send_password()
 
     session = getsession('http://dreamwidth.org/interface/flat', username, password)
     datamadness = test(session)
