@@ -94,7 +94,7 @@ def test(session):
 if __name__ == '__main__':
     username = 'worldcup_mods'
     commname = 'hs_worldcup'
-    password = '$weetbroandhellajeff'
+    password = 'not the real password'
 
     session = getsession('http://dreamwidth.org/interface/flat', username, password)
     datamadness = test(session)
