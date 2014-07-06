@@ -24,10 +24,10 @@ cursor = dbconn.cursor()
 
 #The switch mode lets players switch off of sinking ships, join noir,
 # or drop.
-mode = 'switch'
+#mode = 'switch'
 
 #The drop mode only lets players drop.
-#mode = 'drop'
+mode = 'drop'
 
 def quoteattr(s):
     qs = cgi.escape(s, 1)
