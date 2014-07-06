@@ -241,6 +241,7 @@ def add_player_to_noir(player, cursor):
     """Add a player to noir."""
     array = (player,)
     cursor.execute('INSERT into noir (dwname) values (?)', array)
+    cursor.execute('UPDATE players set team=? where dwname=?', ('noir', player))
     return
 
 def remove_player_from_team(player, teamname, cursor):
