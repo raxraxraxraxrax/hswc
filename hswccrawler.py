@@ -45,7 +45,8 @@ def get_dwname_from_posterid(posterid, cursor):
     """Take a posterid, get a dwname."""
 
     array = (posterid, )
-    result = cursor.execute('SELECT * from dwids where dwid=?', array)
+    cursor.execute('SELECT * from dwids where dwid=?', array)
+    result = cursor.fetchone()
     if not result:
         return "UNKNOWN POSTER"	
     
@@ -71,17 +72,19 @@ def add_to_db(id, jitemid, posterid, state, parentid, date, body, subject, curso
     dwname = get_dwname_from_posterid(posterid, cursor)
     
     # if there is no team it returns 0 which is fine 
-    playerteam = get_current_team(dwname, cursor)
+    playerteam = hswcutil.get_current_team(dwname, cursor)
 
 	
     if state == "D" or state =="S":
 	# no one wants to score screened/deleted posts
 	scoring = 0
 	needsreview = 'no'
+    else:
+	state = ""
 
     # PROMPT: TEAM [YOUR SHIP]
-    if re.search("^PROMPT: TEAM", subject):
-	team = subject.split(" TEAM ")[1].lower()
+    if re.search("^prompt: team", subject.lower()):
+	team = (subject.lower()).split(" team ")[1]
 	if playerteam == team:
 	    isprompt = 'yes'
 	    scoring = 1
@@ -89,8 +92,8 @@ def add_to_db(id, jitemid, posterid, state, parentid, date, body, subject, curso
 	    isprompt = 'yes'
 	    needsreview = 'yes'
 
-    if re.search("^FILL: TEAM", subject):
-	team = subject.split(" TEAM ")[1].lower()
+    if re.search("^fill: team", subject.lower()):
+	team = (subject.lower()).split(" team ")[1]
 	if not parentid:
             needsreview = 'yes'
 	else:
@@ -105,8 +108,9 @@ def add_to_db(id, jitemid, posterid, state, parentid, date, body, subject, curso
     # right now we pass date through but in the future we might check for last-minute posts
 
     # enter it into the db yo
-    array = (id, posterid, parentid, subject, body, date, dwname, playerteam, isprompt, isfill, needsreview, jitemid, scoring)
-    cursor.execute('INSERT into comments (id, posterid, parentid, subject, body, date, dwname, team, isprompt, isfill, needsreview, jitemid, scoring) values (?,?,?,?,?,?,?,?,?,?,?,?,?)', array)
+    array = (id, posterid, parentid, subject, body, date, dwname, playerteam, isprompt, isfill, needsreview, jitemid, scoring, state)
+    print array
+    cursor.execute('INSERT into comments (id, posterid, parentid, subject, body, date, dwname, team, isprompt, isfill, needsreview, jitemid, scoring, extra1) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', array)
     dbconn.commit()
 
     return
@@ -123,6 +127,17 @@ def set_comment_maxid(maxid, cursor):
     dbconn.commit()
 
     return
+
+def get_comment_maxid(cursor): 
+    """Get the comment maxid for the current year."""
+
+    # hardcoded right now
+    year = 2014
+
+    cursor.execute("SELECT * FROM commentmeta where year=?", (year,))
+    output = cursor.fetchone()
+
+    return output[2]
 
 def dwid_exists(dwid, cursor):
     """See if a dwid exists in the database or not. If yes, return 1,
@@ -162,16 +177,24 @@ def populate_dwids(meta, cursor):
 def break_apart_object(outputobject):
     """Break apart an object and prepare it for entry into the database."""
 
+    maxid = 0
+
     for x in outputobject.getElementsByTagName('comment'):
         id = int(x.getAttribute('id'))
 	jitemid = int(x.getAttribute('jitemid'))
 	posterid = int(x.getAttribute('posterid'))
-	state = (x.getAttribute('state')) # we ignore this right now I think
-	parentid = int(x.getAttribute('parentid'))
+	state = (x.getAttribute('state'))
+	if x.getAttribute('parentid'):
+	    parentid = int(x.getAttribute('parentid'))
+	else:
+            parentid = ''
         date = dwump.gettext(x.getElementsByTagName("date"))
-	body = unicode(dwump.gettext(x.getElementsByTagName("body"))).encode('utf-8')
-	subject = unicode(dwump.gettext(c.getElementsByTagName("subject"))).encode('utf-8')
+	body = unicode(dwump.gettext(x.getElementsByTagName("body")))#.encode('utf-8')
+	subject = unicode(dwump.gettext(x.getElementsByTagName("subject")))#.encode('utf-8')
+	maxid = id
         add_to_db(id, jitemid, posterid, state, parentid, date, body, subject , cursor)
+ 
+    return maxid
 
 def get_comments(startnumber, session):
     """Gets 1000 comments starting from startnumber as a blob thing.
@@ -189,16 +212,46 @@ def get_current_start_point(cursor):
     # should unhardcode at some point
     year = 2014
 
-    output = cursor.execute('SELECT * from commentmeta where year=?', (year, ))
+    array = (year, )
+    cursor.execute('SELECT * from commentmeta where year=?', array)
+    output = cursor.fetchone()
 
     return output[1]
+
+def set_current_start_point(commentcount, cursor):
+    """Set the most recent comment downloaded."""
+
+    year = 2014
+
+    cursor.execute('UPDATE commentmeta set current=? where year=?', (commentcount, year))
+    
+    return
+
+def slurp_recurser(startpoint, maxid, session):
+    """yeah"""
+
+    commentblob = get_comments(startpoint, session)
+    downloaded_maxid = break_apart_object(commentblob)
+
+    if downloaded_maxid >= maxid:
+        print "Hit maximum comments."
+        set_current_start_point(downloaded_maxid, cursor)
+        return
+
+    slurp_recurser(startpoint+1000, maxid, session) 
+ 
 
 def comment_slurper(session):
     """Slurps up comments from the last point to the current last post 
        as of the last metadata run."""
 
     current_start_point = get_current_start_point(cursor)
+    maxid = get_comment_maxid(cursor)
 
+    slurp_recurser(current_start_point, maxid, session)
+
+    return
+    
     # MAGIC MARKER
 
 def execute_startup_metadata(startid, session):
@@ -232,10 +285,12 @@ if __name__ == '__main__':
                                           # I guess a config file would be maximally correct
 
     session = dwump.getsession('http://dreamwidth.org/interface/flat', username, password)
-    datamadness = test(session)
+
+    comment_slurper(session)
+    #datamadness = test(session)
     #execute_startup_metadata(10000, session)
     # the above command takes a while and should not necessarily be run every time
-    for c in datamadness.getElementsByTagName('comment'):
-        id = int(c.getAttribute('id'))
-	string = dwump.gettext(c.getElementsByTagName("body"))
-	print unicode(string).encode('utf-8')
+    #for c in datamadness.getElementsByTagName('comment'):
+    #    id = int(c.getAttribute('id'))
+#	string = dwump.gettext(c.getElementsByTagName("body"))
+#	print unicode(string).encode('utf-8')
