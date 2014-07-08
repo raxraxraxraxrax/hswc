@@ -2,7 +2,6 @@ TODO: voting, crawling, scores page
 
 task 1: signup page
 DONE!
-although we need to figure out how to close signups
 
 task 2: voting page
 (we don't actually need this until late May or June)
@@ -16,15 +15,8 @@ task 2: voting page
  * we have a possible algorithm here: http://pastebin.com/ETQiyec9
 
 task 3: dreamwidth crawling
-(this we need earlier but it's low priority so I'm not touching it)
-
- * hoo boy
- * hairy
- * made of hair
- * it's like Jade/Condesce up in here
- * this is lower priority so think about it more later
- * we have some notes on how Casey did this last year but the short version is "this process sucks"
- * if we can find a non-suck way to do this that would rock
+DONE!
+although it needs to be cleaned up and made accessible
 
 other things we might want to do:
 
