@@ -78,12 +78,12 @@ def add_to_db(id, jitemid, posterid, state, parentid, date, body, subject, curso
     if state == "D" or state =="S":
 	# no one wants to score screened/deleted posts
 	scoring = 0
-	needsreview = 'no'
+	needsreview = 'screened'
     else:
 	state = ""
 
     # PROMPT: TEAM [YOUR SHIP]
-    if re.search("^prompt: team", subject.lower()):
+    if re.search("^prompt: team ", subject.lower()):
 	team = (subject.lower()).split(" team ")[1]
 	if playerteam == team:
 	    isprompt = 'yes'
@@ -92,7 +92,7 @@ def add_to_db(id, jitemid, posterid, state, parentid, date, body, subject, curso
 	    isprompt = 'yes'
 	    needsreview = 'yes'
 
-    if re.search("^fill: team", subject.lower()):
+    if re.search("^fill: team ", subject.lower()):
 	team = (subject.lower()).split(" team ")[1]
 	if not parentid:
             needsreview = 'yes'
@@ -156,6 +156,7 @@ def populate_dwids(meta, cursor):
     for x in meta.getElementsByTagName('usermap'):
         dwid = int(x.getAttribute('id'))
         dwname = x.getAttribute('user')
+	dwname = re.sub('_', '-', dwname) 
 	if hswcutil.player_exists(dwname, cursor):
             # then add the dwid to the player's line in the player table
             cursor.execute('UPDATE players set dwid=? where dwname=?', (dwid, dwname))
@@ -286,9 +287,9 @@ if __name__ == '__main__':
 
     session = dwump.getsession('http://dreamwidth.org/interface/flat', username, password)
 
-    comment_slurper(session)
     #datamadness = test(session)
-    #execute_startup_metadata(10000, session)
+    #execute_startup_metadata(0, session)
+    comment_slurper(session)
     # the above command takes a while and should not necessarily be run every time
     #for c in datamadness.getElementsByTagName('comment'):
     #    id = int(c.getAttribute('id'))
