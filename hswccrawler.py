@@ -225,6 +225,7 @@ def set_current_start_point(commentcount, cursor):
     year = 2014
 
     cursor.execute('UPDATE commentmeta set current=? where year=?', (commentcount, year))
+    dbconn.commit()
     
     return
 
